@@ -43,53 +43,218 @@ pio.templates["cbc_dark"] = go.layout.Template(
 )
 pio.templates.default = "cbc_dark"
 
-# CSS perso - on garde sobre, juste pour le ton
+# Style global - inspire HIG Apple : hairlines, glass, fade-up doux.
+# Streamlit nous donne le squelette, on raffine seulement la perception.
 st.markdown(
     """
     <style>
-      .block-container { padding-top: 2.2rem; max-width: 1180px; }
-      h1 { letter-spacing: -0.02em; line-height: 1.1; }
-      h2 { color: #F5F7FA; font-weight: 700; margin-top: 0.4rem; }
-      h3, h4, h5 { color: #F5F7FA; }
-      [data-testid="stSidebar"] { background: #0B1132; }
-      [data-testid="stSidebar"] hr { border-color: #1F2754; }
+      :root {
+        --bg: #06091F;
+        --bg-2: #0B1132;
+        --bg-3: #10153A;
+        --line: rgba(255,255,255,0.08);
+        --line-2: rgba(255,255,255,0.14);
+        --ink: #F5F7FA;
+        --ink-2: #C7CCE0;
+        --ink-3: #8B92B3;
+        --gold: #FFC64D;
+        --mint: #00E5B0;
+        --coral: #FF5C7A;
+        --blue: #6E95FF;
+      }
+      html, body, [class*="stApp"] {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Inter", "Segoe UI", system-ui, sans-serif;
+        font-feature-settings: "tnum" 1, "case" 1, "ss01" 1;
+        -webkit-font-smoothing: antialiased;
+        background:
+          radial-gradient(1200px 700px at 80% -10%,
+            rgba(110,149,255,0.10), transparent 60%),
+          radial-gradient(900px 500px at -10% 110%,
+            rgba(255,198,77,0.08), transparent 60%),
+          var(--bg);
+      }
+      .block-container { padding-top: 2.4rem; max-width: 1180px; }
+      h1, h2, h3, h4 {
+        font-family: -apple-system, "SF Pro Display", "Inter", system-ui;
+        letter-spacing: -0.018em;
+      }
+      h1 { font-weight: 700; line-height: 1.05; }
+      h2 { font-weight: 700; color: var(--ink); margin-top: 0.4rem; }
+      h3, h4, h5 { color: var(--ink); }
+      p, li { color: var(--ink-2); line-height: 1.65; }
+      hr { border-color: var(--line) !important; opacity: 1; }
+
+      /* Sidebar */
+      [data-testid="stSidebar"] {
+        background:
+          linear-gradient(180deg, rgba(16,21,58,0.65), rgba(11,17,50,0.92));
+        border-right: 1px solid var(--line);
+        backdrop-filter: blur(20px);
+      }
+      [data-testid="stSidebar"] hr { border-color: var(--line); }
+      [data-testid="stSidebar"] [role="radiogroup"] label {
+        border-radius: 8px; padding: 0.25rem 0.4rem;
+        transition: background 180ms ease, transform 180ms ease;
+      }
+      [data-testid="stSidebar"] [role="radiogroup"] label:hover {
+        background: rgba(255,255,255,0.04);
+      }
+
+      /* Cache l'eyebrow Deploy/Toolbar par defaut */
+      header [data-testid="stStatusWidget"] { display: none; }
+
+      /* Eyebrow petite caps doree */
       .eyebrow {
-        color: #FFC64D; font-weight: 700; letter-spacing: 0.18em;
-        font-size: 0.72rem; text-transform: uppercase;
-        margin-bottom: 0.4rem;
+        color: var(--gold); font-weight: 700; letter-spacing: 0.22em;
+        font-size: 0.7rem; text-transform: uppercase;
+        margin-bottom: 0.5rem;
       }
+      .eyebrow .dot {
+        display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+        background: var(--gold); margin-right: 0.45rem; vertical-align: middle;
+        box-shadow: 0 0 12px rgba(255,198,77,0.6);
+      }
+
+      /* Carte hero - effet glass + bord doré gauche */
       .hero-card {
-        background: linear-gradient(135deg, #10153A 0%, #0B1132 100%);
-        border: 1px solid #1F2754; border-left: 3px solid #FFC64D;
-        border-radius: 12px; padding: 1.1rem 1.3rem; margin: 0.5rem 0 1.2rem;
+        background:
+          linear-gradient(135deg, rgba(16,21,58,0.78) 0%,
+                           rgba(11,17,50,0.62) 100%);
+        border: 1px solid var(--line-2);
+        border-left: 3px solid var(--gold);
+        border-radius: 16px;
+        padding: 1.3rem 1.5rem;
+        margin: 0.6rem 0 1.4rem;
+        box-shadow:
+          0 1px 0 rgba(255,255,255,0.04) inset,
+          0 24px 60px -20px rgba(0,0,0,0.55);
+        backdrop-filter: blur(14px);
+        animation: fadeUp 480ms cubic-bezier(.22,.61,.36,1) both;
       }
-      .hero-card h3 { margin: 0 0 0.4rem 0; color: #FFC64D;
-        font-size: 0.95rem; letter-spacing: 0.04em; }
-      .hero-card p { margin: 0; color: #C7CCE0; line-height: 1.55;
-        font-size: 0.92rem; }
+      .hero-card h3 {
+        margin: 0 0 0.4rem 0; color: var(--gold);
+        font-size: 0.78rem; letter-spacing: 0.22em; text-transform: uppercase;
+      }
+      .hero-card p {
+        margin: 0; color: var(--ink-2); line-height: 1.65;
+        font-size: 0.95rem;
+      }
+
+      /* Stat / KPI tile */
       .stat-card {
-        background: #10153A; border: 1px solid #1F2754;
-        border-radius: 10px; padding: 0.9rem 1.1rem;
+        background: rgba(16,21,58,0.72);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem 1.15rem;
+        backdrop-filter: blur(10px);
+        transition: transform 220ms ease, border-color 220ms ease,
+                    box-shadow 220ms ease;
+        animation: fadeUp 520ms cubic-bezier(.22,.61,.36,1) both;
       }
-      .stat-card .lbl { color: #8B92B3; font-size: 0.7rem;
-        letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; }
-      .stat-card .val { color: #FFC64D; font-size: 1.8rem; font-weight: 700;
-        margin-top: 0.25rem; line-height: 1.1; }
-      .stat-card .hint { color: #8B92B3; font-size: 0.78rem;
-        margin-top: 0.15rem; }
+      .stat-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--line-2);
+        box-shadow: 0 18px 40px -22px rgba(0,0,0,0.6);
+      }
+      .stat-card .lbl {
+        color: var(--ink-3); font-size: 0.68rem;
+        letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;
+      }
+      .stat-card .val {
+        color: var(--gold); font-size: 1.85rem; font-weight: 700;
+        margin-top: 0.3rem; line-height: 1.05;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat-card .hint {
+        color: var(--ink-3); font-size: 0.78rem; margin-top: 0.2rem;
+      }
+
+      /* Streamlit metric override */
       [data-testid="stMetric"] {
-        background: #10153A; border: 1px solid #1F2754;
-        border-radius: 10px; padding: 0.9rem 1rem;
+        background: rgba(16,21,58,0.72);
+        border: 1px solid var(--line);
+        border-radius: 12px; padding: 0.95rem 1.05rem;
+        backdrop-filter: blur(10px);
+        transition: transform 220ms ease, border-color 220ms ease;
       }
-      [data-testid="stMetricValue"] { color: #FFC64D; }
-      div[data-testid="stDataFrame"] { border-radius: 10px;
-        border: 1px solid #1F2754; }
-      /* badge pill */
+      [data-testid="stMetric"]:hover {
+        transform: translateY(-2px); border-color: var(--line-2);
+      }
+      [data-testid="stMetricValue"] { color: var(--gold); }
+      [data-testid="stMetricLabel"] p {
+        text-transform: uppercase; letter-spacing: 0.15em;
+        font-size: 0.7rem; color: var(--ink-3); font-weight: 700;
+      }
+
+      /* DataFrames */
+      div[data-testid="stDataFrame"] {
+        border-radius: 12px; border: 1px solid var(--line); overflow: hidden;
+      }
+
+      /* Plotly charts - leger lift au hover */
+      [data-testid="stPlotlyChart"] {
+        border-radius: 14px; overflow: hidden;
+        border: 1px solid var(--line);
+        background: rgba(11,17,50,0.4);
+        animation: fadeUp 560ms cubic-bezier(.22,.61,.36,1) both;
+      }
+
+      /* Badges / chips */
       .pill {
-        display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px;
-        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
-        background: rgba(255,198,77,0.12); color: #FFC64D;
-        border: 1px solid rgba(255,198,77,0.3);
+        display: inline-block; padding: 0.22rem 0.7rem; border-radius: 999px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+        background: rgba(255,198,77,0.12); color: var(--gold);
+        border: 1px solid rgba(255,198,77,0.32);
+      }
+      .pill.blue { background: rgba(110,149,255,0.12); color: var(--blue);
+        border-color: rgba(110,149,255,0.32); }
+      .pill.mint { background: rgba(0,229,176,0.12); color: var(--mint);
+        border-color: rgba(0,229,176,0.32); }
+      .pill.coral { background: rgba(255,92,122,0.12); color: var(--coral);
+        border-color: rgba(255,92,122,0.32); }
+
+      /* Carte info "lecture" en bas de chapitre */
+      .lecture-card {
+        background:
+          linear-gradient(135deg, rgba(0,229,176,0.07) 0%,
+                           rgba(110,149,255,0.05) 100%);
+        border: 1px solid rgba(0,229,176,0.22);
+        border-left: 3px solid var(--mint);
+        border-radius: 14px; padding: 1rem 1.2rem; margin: 1rem 0;
+        animation: fadeUp 500ms cubic-bezier(.22,.61,.36,1) both;
+      }
+      .lecture-card .tag {
+        font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+        color: var(--mint); font-weight: 700; margin-bottom: 0.35rem;
+      }
+      .lecture-card p { margin: 0; color: var(--ink-2);
+        font-size: 0.93rem; line-height: 1.62; }
+
+      /* Divider section anime */
+      .section-divider {
+        height: 1px; margin: 0.6rem 0 1.1rem;
+        background: linear-gradient(90deg,
+          rgba(255,198,77,0.0), rgba(255,198,77,0.35),
+          rgba(255,198,77,0.0));
+        animation: glow 2.6s ease-in-out infinite alternate;
+      }
+
+      /* Animations */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes glow {
+        from { opacity: 0.55; } to { opacity: 1; }
+      }
+
+      /* Petit reduce-motion */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
       }
     </style>
     """,
@@ -115,12 +280,15 @@ COUL_BL = "#6E95FF"
 # ----- Petits helpers ---------------------------------------------------
 
 def section(titre, sous_titre=None, eyebrow="CHAPITRE"):
-    st.markdown(f'<div class="eyebrow">{eyebrow}</div>',
-                 unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="eyebrow"><span class="dot"></span>{eyebrow}</div>',
+        unsafe_allow_html=True,
+    )
     st.markdown(f"## {titre}")
     if sous_titre:
         st.caption(sous_titre)
-    st.markdown("---")
+    st.markdown('<div class="section-divider"></div>',
+                 unsafe_allow_html=True)
 
 
 def stat_card(label, val, hint=""):
@@ -134,7 +302,11 @@ def stat_card(label, val, hint=""):
 
 def insight(texte):
     """Encart 'Ce que ca veut dire' a la fin de chaque chapitre."""
-    st.info(f"**Lecture :** {texte}")
+    st.markdown(
+        f'<div class="lecture-card"><div class="tag">Lecture</div>'
+        f'<p>{texte}</p></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def kpi_row(items):
@@ -146,8 +318,16 @@ def kpi_row(items):
 
 # ----- Sidebar : navigation linéaire ------------------------------------
 
-st.sidebar.markdown("### Bank Marketing")
-st.sidebar.caption("M1 ESGIS - Visualisation Python")
+st.sidebar.markdown(
+    "<div style='display:flex;align-items:center;gap:0.6rem;"
+    "margin:0.3rem 0 0.2rem;'>"
+    "<div style='width:10px;height:10px;border-radius:50%;"
+    "background:#FFC64D;box-shadow:0 0 14px rgba(255,198,77,0.7);'></div>"
+    "<div style='font-weight:700;font-size:1.02rem;color:#F5F7FA;"
+    "letter-spacing:-0.01em;'>Bank Marketing</div></div>",
+    unsafe_allow_html=True,
+)
+st.sidebar.caption("M1 ESGIS - Visualisation Python - 2025/2026")
 st.sidebar.markdown("---")
 
 PAGES = [
@@ -169,19 +349,26 @@ st.sidebar.markdown(
     "Groupe 4 - 2025/2026  \n"
     "[Notebook complet](../notebook/analyse.ipynb)"
 )
+st.sidebar.markdown(
+    "<div style='margin-top:0.8rem;font-size:0.72rem;color:#8B92B3;"
+    "line-height:1.55;'>Source : UCI Bank Marketing (Moro, Rita, Cortez, "
+    "2014). Donnees publiques utilisees en TP.</div>",
+    unsafe_allow_html=True,
+)
 
 # =======================================================================
 # PAGE 1 - Accueil
 # =======================================================================
 if page == PAGES[0]:
     st.markdown(
-        '<div class="eyebrow">M1 ESGIS &middot; Visualisation Python &middot; '
-        '2025 / 2026</div>',
+        '<div class="eyebrow"><span class="dot"></span>'
+        'M1 ESGIS &middot; Visualisation Python &middot; 2025 / 2026</div>',
         unsafe_allow_html=True,
     )
     st.title("Bank Marketing")
     st.markdown(
-        "<h2 style='color:#FFC64D; font-weight:700; margin-top:-0.4rem;'>"
+        "<h2 style='color:#FFC64D; font-weight:700; margin-top:-0.4rem; "
+        "letter-spacing:-0.02em;'>"
         "Analyse d'une campagne d'appels bancaires</h2>",
         unsafe_allow_html=True,
     )
@@ -193,11 +380,16 @@ if page == PAGES[0]:
     st.markdown(
         '<div class="hero-card">'
         '<h3>L\'ENJEU</h3>'
-        '<p>Une banque portugaise a passe <b>45 211 appels</b> entre 2008 '
-        'et 2013 pour vendre un depot a terme. Seuls <b>11,7 %</b> des '
-        'clients ont dit oui. Cette app reprend, chapitre par chapitre, '
-        'mon expose : quels sont les profils qui souscrivent, et pourquoi.'
-        '</p></div>',
+        '<p>Une banque portugaise a contacte <b>45 211 clients</b> par '
+        'telephone entre <b>mai 2008 et novembre 2013</b> pour leur '
+        'proposer un depot a terme. Au final, seuls <b>11,7 %</b> ont '
+        'souscrit. La direction marketing veut comprendre <b>qui</b> sont '
+        'ces 5 289 clients qui ont dit oui, et surtout <b>quels signaux '
+        'permettent de les reperer en amont</b> pour eviter de gaspiller '
+        '88 % des appels.<br><br>'
+        'Cette application reprend, chapitre par chapitre, la demarche '
+        'de mon expose : quatre questions, quatre tests statistiques, '
+        'quatre conclusions actionnables.</p></div>',
         unsafe_allow_html=True,
     )
 
@@ -234,10 +426,23 @@ if page == PAGES[0]:
     with k4: stat_card("Valeurs manquantes", "0", "rien a imputer")
 
     st.markdown(" ")
+    st.markdown("### Au programme")
     st.markdown(
-        '<span class="pill">Navigation</span> &nbsp; Utilise la sidebar '
-        'a gauche pour passer d\'un chapitre a l\'autre. Tout suit l\'ordre '
-        'de l\'expose oral.',
+        "<p style='color:#C7CCE0;line-height:1.7;'>"
+        "L'expose suit un fil simple : on regarde d'abord le dataset, on "
+        "laisse les chiffres parler, puis on creuse quatre questions "
+        "precises avec a chaque fois <b>un graphe, un test statistique, "
+        "une lecture</b>. On finit par les recommandations marketing et "
+        "un mot sur la stack technique. Chaque page de cette app "
+        "correspond a un moment de l'oral.</p>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(" ")
+    st.markdown(
+        '<span class="pill">Navigation</span> &nbsp; <span style="color:'
+        '#C7CCE0;">Utilisez la sidebar a gauche pour passer d\'un chapitre '
+        'a l\'autre. L\'ordre suit l\'expose oral.</span>',
         unsafe_allow_html=True,
     )
 
@@ -252,10 +457,16 @@ elif page == PAGES[1]:
     )
 
     st.markdown("""
-    Le dataset a ete telecharge sur **UCI Machine Learning Repository**.
-    Il decrit une campagne de telephonage realisee par une banque portugaise.
-    Chaque ligne = un client appele. La variable cible `y` vaut `yes` si le
-    client a souscrit a un depot a terme, `no` sinon.
+    Le dataset a ete telecharge sur **UCI Machine Learning Repository**
+    (Moro, Rita & Cortez, 2014). Il recense une campagne de telephonage
+    realisee par une **banque portugaise** entre mai 2008 et novembre 2013,
+    sur fond de crise financiere. Chaque ligne correspond a un client
+    contacte. La variable cible `y` vaut `yes` si le client a souscrit a
+    un depot a terme, `no` sinon.
+
+    On a donc affaire a un cas reel, anonymise, qui se prete bien a une
+    analyse descriptive : pas de valeur manquante, pas de doublon
+    detecte, types coherents. C'est presque un cas d'ecole.
     """)
 
     c1, c2 = st.columns([2, 1])
@@ -452,9 +663,17 @@ elif page == PAGES[4]:
         st.metric("p-value", f"{p_val:.2e}")
 
         if p_val < 0.05:
-            st.success("p < 0.05 - on rejette H0")
+            st.markdown(
+                '<div style="margin-top:0.4rem;"><span class="pill mint">'
+                'p &lt; 0.05 &middot; on rejette H0</span></div>',
+                unsafe_allow_html=True,
+            )
         else:
-            st.warning("p >= 0.05 - on garde H0")
+            st.markdown(
+                '<div style="margin-top:0.4rem;"><span class="pill coral">'
+                'p &ge; 0.05 &middot; on garde H0</span></div>',
+                unsafe_allow_html=True,
+            )
 
     insight(
         "Difference de l'ordre de 500 euros sur la moyenne. Avec n=45 000, "
@@ -668,4 +887,13 @@ else:
     )
 
     st.markdown(" ")
-    st.success("Merci pour votre attention. Place aux questions.")
+    st.markdown(
+        '<div class="hero-card" style="border-left-color:#00E5B0;">'
+        '<h3 style="color:#00E5B0;">MOT DE LA FIN</h3>'
+        '<p>Le travail montre qu\'a partir de variables simples et de tests '
+        'classiques, on peut deja sortir des recommandations concretes pour '
+        'la prochaine campagne. Le notebook documente chaque etape, le '
+        'dashboard la rejoue en live, le rapport PDF la formalise. Merci '
+        'pour votre attention. Place aux questions.</p></div>',
+        unsafe_allow_html=True,
+    )
