@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
 from scipy import stats
 
@@ -21,6 +22,78 @@ st.set_page_config(
     page_title="Bank Marketing - Junior Samuel KOUDJI",
     page_icon=":bar_chart:",
     layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Template plotly aligne sur la palette du PPT (navy + or)
+# Sinon les graphes ont un fond blanc dans le theme sombre = moche
+pio.templates["cbc_dark"] = go.layout.Template(
+    layout=go.Layout(
+        paper_bgcolor="#06091F",
+        plot_bgcolor="#0B1132",
+        font=dict(color="#F5F7FA", family="Inter, system-ui, sans-serif"),
+        title=dict(font=dict(color="#FFC64D", size=18)),
+        xaxis=dict(gridcolor="#1F2754", zerolinecolor="#1F2754",
+                    linecolor="#2A3370"),
+        yaxis=dict(gridcolor="#1F2754", zerolinecolor="#1F2754",
+                    linecolor="#2A3370"),
+        legend=dict(bgcolor="rgba(0,0,0,0)"),
+        margin=dict(l=20, r=20, t=60, b=20),
+    )
+)
+pio.templates.default = "cbc_dark"
+
+# CSS perso - on garde sobre, juste pour le ton
+st.markdown(
+    """
+    <style>
+      .block-container { padding-top: 2.2rem; max-width: 1180px; }
+      h1 { letter-spacing: -0.02em; line-height: 1.1; }
+      h2 { color: #F5F7FA; font-weight: 700; margin-top: 0.4rem; }
+      h3, h4, h5 { color: #F5F7FA; }
+      [data-testid="stSidebar"] { background: #0B1132; }
+      [data-testid="stSidebar"] hr { border-color: #1F2754; }
+      .eyebrow {
+        color: #FFC64D; font-weight: 700; letter-spacing: 0.18em;
+        font-size: 0.72rem; text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
+      .hero-card {
+        background: linear-gradient(135deg, #10153A 0%, #0B1132 100%);
+        border: 1px solid #1F2754; border-left: 3px solid #FFC64D;
+        border-radius: 12px; padding: 1.1rem 1.3rem; margin: 0.5rem 0 1.2rem;
+      }
+      .hero-card h3 { margin: 0 0 0.4rem 0; color: #FFC64D;
+        font-size: 0.95rem; letter-spacing: 0.04em; }
+      .hero-card p { margin: 0; color: #C7CCE0; line-height: 1.55;
+        font-size: 0.92rem; }
+      .stat-card {
+        background: #10153A; border: 1px solid #1F2754;
+        border-radius: 10px; padding: 0.9rem 1.1rem;
+      }
+      .stat-card .lbl { color: #8B92B3; font-size: 0.7rem;
+        letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; }
+      .stat-card .val { color: #FFC64D; font-size: 1.8rem; font-weight: 700;
+        margin-top: 0.25rem; line-height: 1.1; }
+      .stat-card .hint { color: #8B92B3; font-size: 0.78rem;
+        margin-top: 0.15rem; }
+      [data-testid="stMetric"] {
+        background: #10153A; border: 1px solid #1F2754;
+        border-radius: 10px; padding: 0.9rem 1rem;
+      }
+      [data-testid="stMetricValue"] { color: #FFC64D; }
+      div[data-testid="stDataFrame"] { border-radius: 10px;
+        border: 1px solid #1F2754; }
+      /* badge pill */
+      .pill {
+        display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+        background: rgba(255,198,77,0.12); color: #FFC64D;
+        border: 1px solid rgba(255,198,77,0.3);
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 
@@ -41,11 +114,22 @@ COUL_BL = "#6E95FF"
 
 # ----- Petits helpers ---------------------------------------------------
 
-def section(titre, sous_titre=None):
+def section(titre, sous_titre=None, eyebrow="CHAPITRE"):
+    st.markdown(f'<div class="eyebrow">{eyebrow}</div>',
+                 unsafe_allow_html=True)
     st.markdown(f"## {titre}")
     if sous_titre:
         st.caption(sous_titre)
     st.markdown("---")
+
+
+def stat_card(label, val, hint=""):
+    st.markdown(
+        f'<div class="stat-card"><div class="lbl">{label}</div>'
+        f'<div class="val">{val}</div>'
+        f'<div class="hint">{hint}</div></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def insight(texte):
@@ -90,16 +174,32 @@ st.sidebar.markdown(
 # PAGE 1 - Accueil
 # =======================================================================
 if page == PAGES[0]:
-    st.title("Bank Marketing - analyse d'une campagne bancaire")
-    st.caption("Junior Samuel KOUDJI - Groupe 4 - M1 Architecture Logiciels - ESGIS Adidogome")
+    st.markdown(
+        '<div class="eyebrow">M1 ESGIS &middot; Visualisation Python &middot; '
+        '2025 / 2026</div>',
+        unsafe_allow_html=True,
+    )
+    st.title("Bank Marketing")
+    st.markdown(
+        "<h2 style='color:#FFC64D; font-weight:700; margin-top:-0.4rem;'>"
+        "Analyse d'une campagne d'appels bancaires</h2>",
+        unsafe_allow_html=True,
+    )
+    st.caption(
+        "Junior Samuel KOUDJI &middot; Groupe 4 &middot; M1 Architecture "
+        "Logiciels &middot; ESGIS Adidogome"
+    )
 
-    st.markdown("""
-    Cette application accompagne mon expose. Elle reprend exactement les memes
-    chapitres que la presentation orale, mais en interactif. Pour chaque
-    question, on a :
-    le **graphe**, l'**explication** de ce qu'on voit, et le **test statistique**
-    quand il y en a un.
-    """)
+    st.markdown(
+        '<div class="hero-card">'
+        '<h3>L\'ENJEU</h3>'
+        '<p>Une banque portugaise a passe <b>45 211 appels</b> entre 2008 '
+        'et 2013 pour vendre un depot a terme. Seuls <b>11,7 %</b> des '
+        'clients ont dit oui. Cette app reprend, chapitre par chapitre, '
+        'mon expose : quels sont les profils qui souscrivent, et pourquoi.'
+        '</p></div>',
+        unsafe_allow_html=True,
+    )
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -125,17 +225,20 @@ if page == PAGES[0]:
         )
 
     st.markdown("### Chiffres cles")
-    kpi_row([
-        ("Clients", f"{len(df):,}".replace(",", " "), "lignes du CSV"),
-        ("Variables", "17", "dont la cible y"),
-        ("Taux souscription", "11.7 %", "5 289 sur 45 211"),
-        ("Valeurs manquantes", "0", "rien a imputer"),
-    ])
+    k1, k2, k3, k4 = st.columns(4)
+    with k1: stat_card("Clients", f"{len(df):,}".replace(",", " "),
+                        "lignes du CSV")
+    with k2: stat_card("Variables", "17", "dont la cible y")
+    with k3: stat_card("Taux souscription", "11.7 %",
+                        "5 289 sur 45 211")
+    with k4: stat_card("Valeurs manquantes", "0", "rien a imputer")
 
     st.markdown(" ")
-    st.success(
-        "Astuce : utilise la **sidebar a gauche** pour passer d'un chapitre "
-        "a l'autre. Tout suit l'ordre de l'expose."
+    st.markdown(
+        '<span class="pill">Navigation</span> &nbsp; Utilise la sidebar '
+        'a gauche pour passer d\'un chapitre a l\'autre. Tout suit l\'ordre '
+        'de l\'expose oral.',
+        unsafe_allow_html=True,
     )
 
 # =======================================================================
@@ -519,26 +622,35 @@ else:
             "Les 6 outils utilises pour ce projet")
 
     outils = [
-        ("pandas", "Chargement & traitement",
+        ("1", "pandas", "Chargement & traitement",
          "DataFrame, agregations, recodages. Base de toute l'analyse."),
-        ("matplotlib / seaborn", "Graphes statiques",
+        ("2", "matplotlib / seaborn", "Graphes statiques",
          "Distributions et boxplots dans le rapport (PNG)."),
-        ("plotly", "Graphes interactifs",
+        ("3", "plotly", "Graphes interactifs",
          "Hover, zoom, legendes cliquables. Base de Streamlit et Dash."),
-        ("streamlit", "Cette app",
-         "Pages narratives, KPI, tests recalcules."),
-        ("dash", "Dashboard applicatif",
-         "Callbacks Python, meme palette. Lancement : python dash_app/app_dash.py"),
-        ("plotly studio", "Edition no-code",
+        ("4", "streamlit", "Cette app",
+         "Pages narratives, KPI, tests recalcules en live."),
+        ("5", "dash", "Dashboard applicatif",
+         "Callbacks Python, meme palette. python dash_app/app_dash.py"),
+        ("6", "plotly studio", "Edition no-code",
          "Importer les .json de plotly_studio/ sur plotly.com/studio/"),
     ]
     cols = st.columns(3)
-    for i, (nom, sous, desc) in enumerate(outils):
+    for i, (num, nom, sous, desc) in enumerate(outils):
         with cols[i % 3]:
-            st.markdown(f"##### {nom}")
-            st.caption(sous)
-            st.write(desc)
-            st.markdown(" ")
+            st.markdown(
+                f'<div class="stat-card" style="margin-bottom:0.8rem;'
+                f'min-height:165px;">'
+                f'<div class="lbl" style="color:#6E95FF;">OUTIL {num}/6</div>'
+                f'<div style="color:#FFC64D; font-size:1.15rem; '
+                f'font-weight:700; margin-top:0.3rem;">{nom}</div>'
+                f'<div style="color:#8B92B3; font-size:0.78rem; '
+                f'margin-top:0.2rem;">{sous}</div>'
+                f'<div style="color:#C7CCE0; font-size:0.85rem; '
+                f'margin-top:0.6rem; line-height:1.4;">{desc}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
     st.markdown("---")
     st.markdown("#### Commandes de demo")
